@@ -18,18 +18,31 @@ class SudokuSquare:
 
 
 class SudokuRow:
-    def __init__ (self, id):
+    def __init__ (self, id, data):
         self.id = id
+        self.puzzleData = data
+
+    def is_solved (self):
+        for c in self.puzzleData[self.id]:
+            if c == 0:
+                return false
 
 
 class SudokuColumn:
-    def __init__ (self, id):
+    def __init__ (self, id, data):
         self.id = id
+        self.puzzleData = data
+
+    def is_solved (self):
+        for r in self.puzzleData:
+            if r[self.id] == 0:
+                return false
 
 
 class SudokuBox:
-    def __init__ (self, id):
+    def __init__ (self, id, data):
         self.id = id
+        self.puzzleData = data
 
 def printPuzzle (pzlData):
     rowCnt = 0
