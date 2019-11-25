@@ -12,37 +12,7 @@ SudokuPZL1 = [[0, 0, 0, 7, 0, 4, 8, 9, 0],
               [0, 4, 0, 2, 0, 0, 0, 0, 3],
               [0, 9, 1, 5, 0, 3, 0, 0, 0]]
 
-class SudokuSquare:
-    def __init__ (self, id):
-        self.id = id
 
-
-class SudokuRow:
-    def __init__ (self, id, data):
-        self.id = id
-        self.puzzleData = data
-
-    def is_solved (self):
-        for c in self.puzzleData[self.id]:
-            if c == 0:
-                return false
-
-
-class SudokuColumn:
-    def __init__ (self, id, data):
-        self.id = id
-        self.puzzleData = data
-
-    def is_solved (self):
-        for r in self.puzzleData:
-            if r[self.id] == 0:
-                return false
-
-
-class SudokuBox:
-    def __init__ (self, id, data):
-        self.id = id
-        self.puzzleData = data
 
 def printPuzzle (pzlData):
     rowCnt = 0
@@ -60,25 +30,118 @@ def printPuzzle (pzlData):
         rowCnt = rowCnt + 1
         colCnt = 0
 
+class SudokuSquare:
+    def __init__ (self, id):
+        self.id = id
+
+
+class SudokuRow:
+    def __init__ (self, id, data):
+        self.id = id
+        self.puzzleData = data
+
+    def is_solved (self):
+        solved = True
+        for c in self.puzzleData[self.id]:
+            if c == 0:
+                solved = False
+                break
+
+        return solved
+
+class SudokuColumn:
+    def __init__ (self, id, data):
+        self.id = id
+        self.puzzleData = data
+
+    def is_solved (self):
+        solved = True
+        for r in self.puzzleData:
+            if r[self.id] == 0:
+                solved = False
+                break
+
+        return solved
+
+
+class SudokuBox:
+    def __init__ (self, id, data):
+        self.id = id
+        self.puzzleData = data
+
+
+class SudokuPuzzle:
+    rows = []
+    columns = []
+    boxes = []
+    data = [[]]
+    orig_data = [[]]
+    def __init__ (self, puzzleData):
+        rowCnt = 0
+        colCnt = 0
+        self.data = copy.deepcopy(puzzleData)
+        self.orig_data = copy.deepcopy(puzzleData)
+        for r in self.data:
+            self.rows.append(SudokuRow(rowCnt, self.data))
+            self.boxes.append(SudokuBox(rowCnt, self.data))
+            for c in r:
+                self.columns.append(SudokuColumn(colCnt, self.data))
+                colCnt = colCnt + 1
+            rowCnt = rowCnt + 1
+            colCnt = 0
+
+    def is_solved (self):
+        solved = True
+
+        if solved:
+            for r in self.rows:
+                if not r.is_solved():
+                    solved = False
+                    break
+
+        if solved:
+            for c in self.columns:
+                if not c.is_solved():
+                    solved = False
+                    break
+
+        if solved:
+            for b in self.boxes:
+                if not b.is_solved():
+                    solved = False
+                    break
+
+        return solved
+
+    def print_orig (self):
+        printPuzzle(self.orig_data)
+
+    def print_data (self):
+        printPuzzle(self.data)
+
 
 print("Hello World, let's solve some Sudoku!")
-SudokuData = copy.deepcopy(SudokuPZL1)
+myPzl = SudokuPuzzle(SudokuPZL1)
 
 print("=PZL1===================================")
-printPuzzle(SudokuPZL1)
+myPzl.print_orig()
 
 print("=DATA===================================")
-printPuzzle(SudokuData)
+myPzl.print_data()
 
 
 print("====================================")
 print("Changing SudokuData")
-SudokuData[0][2] = 3
-SudokuData[0][0] = 5
+myPzl.data[0][2] = 3
+myPzl.data[0][0] = 5
 
 print("=PZL1===================================")
-printPuzzle(SudokuPZL1)
+myPzl.print_orig()
 
 print("=DATA===================================")
-printPuzzle(SudokuData)
+myPzl.print_data()
 
+if myPzl.is_solved():
+    print("WE SOLVED IT!!!!")
+else:
+    print("NOT SOLVED!!!")
