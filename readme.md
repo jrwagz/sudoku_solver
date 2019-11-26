@@ -6,58 +6,53 @@ Currently if you run the program you should see this:
 
     > python sudoku_solver.py
     Hello World, let's solve some Sudoku!
-    =PZL1===================================
-    0 0 0 | 7 0 4 | 8 9 0
-    1 0 0 | 0 0 8 | 0 6 0
-    9 8 0 | 1 0 0 | 3 7 0
+    ==PZL 1==================================
+          | 7   4 | 8 9
+    1     |     8 |   6
+    9 8   | 1     | 3 7
     ---------------------
-    0 7 0 | 4 6 5 | 0 0 0
-    0 0 0 | 0 0 0 | 0 0 0
-    0 0 0 | 9 3 2 | 0 5 0
+      7   | 4 6 5 |
+          |       |
+          | 9 3 2 |   5
     ---------------------
-    0 3 8 | 0 0 7 | 0 4 9
-    0 4 0 | 2 0 0 | 0 0 3
-    0 9 1 | 5 0 3 | 0 0 0
-    =DATA===================================
-    0 0 0 | 7 0 4 | 8 9 0
-    1 0 0 | 0 0 8 | 0 6 0
-    9 8 0 | 1 0 0 | 3 7 0
-    ---------------------
-    0 7 0 | 4 6 5 | 0 0 0
-    0 0 0 | 0 0 0 | 0 0 0
-    0 0 0 | 9 3 2 | 0 5 0
-    ---------------------
-    0 3 8 | 0 0 7 | 0 4 9
-    0 4 0 | 2 0 0 | 0 0 3
-    0 9 1 | 5 0 3 | 0 0 0
-    ====================================
-    Changing SudokuData
-    =PZL1===================================
-    0 0 0 | 7 0 4 | 8 9 0
-    1 0 0 | 0 0 8 | 0 6 0
-    9 8 0 | 1 0 0 | 3 7 0
-    ---------------------
-    0 7 0 | 4 6 5 | 0 0 0
-    0 0 0 | 0 0 0 | 0 0 0
-    0 0 0 | 9 3 2 | 0 5 0
-    ---------------------
-    0 3 8 | 0 0 7 | 0 4 9
-    0 4 0 | 2 0 0 | 0 0 3
-    0 9 1 | 5 0 3 | 0 0 0
-    =DATA===================================
-    5 0 3 | 7 0 4 | 8 9 0
-    1 0 0 | 0 0 8 | 0 6 0
-    9 8 0 | 1 0 0 | 3 7 0
-    ---------------------
-    0 7 0 | 4 6 5 | 0 0 0
-    0 0 0 | 0 0 0 | 0 0 0
-    0 0 0 | 9 3 2 | 0 5 0
-    ---------------------
-    0 3 8 | 0 0 7 | 0 4 9
-    0 4 0 | 2 0 0 | 0 0 3
-    0 9 1 | 5 0 3 | 0 0 0
+      3 8 |     7 |   4 9
+      4   | 2     |     3
+      9 1 | 5   3 |
     NOT SOLVED!!!
+    ==PZL 1 SOLUTION========================
+    5 6 3 | 7 2 4 | 8 9 1
+    1 2 7 | 3 9 8 | 4 6 5
+    9 8 4 | 1 5 6 | 3 7 2
+    ---------------------
+    3 7 9 | 4 6 5 | 1 2 8
+    4 5 2 | 8 7 1 | 9 3 6
+    8 1 6 | 9 3 2 | 7 5 4
+    ---------------------
+    2 3 8 | 6 1 7 | 5 4 9
+    7 4 5 | 2 8 9 | 6 1 3
+    6 9 1 | 5 4 3 | 2 8 7
+    WE SOLVED IT!!!!
 
-This simply illustrates show the SudokuPuzzle class keeps two copies of the original puzzle it is given, one called self.orig_data and the other called self.data.
-The intent is to have our algorithms modify the contents of self.data as they attempt to solve the puzzle, and leave self.orig_data unmodified (just for comparisons sake)
+Well, we didn't really solve it, but instead our code was able to accurately tell us that the first puzzle wasn't solved, and that the second puzzle (the solution) was solved! So that's a good starting point.
 
+
+## Class Structure
+
+We are organizing the classes in this application to mimic the same structures that are in the Sudoku puzzle, meaning Rows, Columns, Boxes, and Squares.
+
+### SudokuPuzzle
+
+The SudokuPuzzle class is the overaching class that contains all the other classes that will implement the specific functions needed to solve each task.  
+
+For example, the SudokuPuzzle class has a function called `is_solved` that returns a boolean (true/false) telling whether or not the Puzzle is solved.  To do this, it simply asks all of the Boxes, Rows, and Columns if they are solved, and as long as all of them are solved, then the entire Puzzle is solved.
+
+### SudokuBox
+
+
+### SudokuRow
+
+
+### SudokuColumn
+
+
+### SudokuSquare
