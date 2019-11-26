@@ -76,6 +76,6 @@
         <F
             N="*"
             Recurse="1"
-            Excludes="*.vpj; *.vpw; *.vpwhist; *.vtg"/>
+            Excludes="*.vpj; *.vpw; *.vpwhist; *.vtg; .git/"/>
     </Files>
 </Project>
