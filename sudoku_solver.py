@@ -24,6 +24,17 @@ SudokuPZL1Solution = [[5, 6, 3, 7, 2, 4, 8, 9, 1],
                       [7, 4, 5, 2, 8, 9, 6, 1, 3],
                       [6, 9, 1, 5, 4, 3, 2, 8, 7]]
 
+
+SudokuBADSOLUTION = [[5, 6, 3, 7, 2, 4, 8, 9, 1],
+                     [1, 2, 7, 3, 9, 8, 4, 6, 5],
+                     [9, 6, 4, 1, 5, 6, 3, 7, 2],  # <--- the second column on this row shouldn't be a 6, it should be an 8!
+                     [3, 7, 9, 4, 6, 5, 1, 2, 8],
+                     [4, 5, 2, 8, 7, 1, 9, 3, 6],
+                     [8, 1, 6, 9, 3, 2, 7, 5, 4],
+                     [2, 3, 8, 6, 1, 7, 5, 4, 9],
+                     [7, 4, 5, 2, 8, 9, 6, 1, 3],
+                     [6, 9, 1, 5, 4, 3, 2, 8, 7]]
+
 index_list = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 
@@ -185,3 +196,12 @@ if myPzlSolved.is_solved():
     print("WE SOLVED IT!!!!")
 else:
     print("NOT SOLVED!!!")
+
+myPzlBadSolution = SudokuPuzzle(SudokuBADSOLUTION)
+print("==PZL WITH BAD SOLUTION=================")
+myPzlBadSolution.print_data()
+if myPzlBadSolution.is_solved():
+    print("OOPS!!!! This puzzle isn't solved, but we think it is!!! Time to fix that")
+else:
+    print("NOT SOLVED!!!")
+
