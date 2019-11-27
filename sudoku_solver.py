@@ -1,6 +1,8 @@
 from array import *
 import copy
 import math
+import operator
+import collections
 
 
 SudokuPZL1 = [[0, 0, 0, 7, 0, 4, 8, 9, 0],
@@ -114,6 +116,8 @@ class SudokuRow:
         # Our data is already a list, so send it to isListSolved directly
         return isListSolved(self.data[self.id])
 
+    def count_of_number (self, number):
+        return self.data[self.id].count(number)
 
     def contains_number (self, number):
         for r in self.data[self.id]:
@@ -134,6 +138,14 @@ class SudokuColumn:
             list.append(r[self.id])
 
         return isListSolved(list)
+
+    def count_of_number (self, number):
+        list = []
+        # Make a list that represents the column data, then send it to isListSolved
+        for r in self.data:
+            list.append(r[self.id])
+
+        return list.count(number)
 
     def contains_number (self, number):
         for r in self.data:
@@ -161,6 +173,15 @@ class SudokuBox:
                 list.append(c)
 
         return isListSolved(list)
+
+    def count_of_number (self, number):
+        list = []
+        # Make a list that represents the box data, then send it to isListSolved
+        for r in self.data[self.row_offset:self.row_offset+3]:
+            for c in r[self.col_offset:self.col_offset+3]:
+                list.append(c)
+
+        return list.count(number)
         
     def contains_number (self, number):
         for r in self.data[self.row_offset:self.row_offset+3]:
@@ -209,6 +230,25 @@ class SudokuPuzzle:
                 return False
 
         return True
+        
+    def count_of_number (self, number):
+        cnt = 0
+        for r in self.rows:
+            cnt = cnt + r.count_of_number(number)
+
+        return cnt
+
+    def counts_of_numbers (self):
+        dict = {}
+        # Figure out how many of each number exists in the puzzle
+        for num in index_list:
+            myNum = num + 1
+            dict[myNum] = self.count_of_number(myNum)
+
+        return dict
+
+    def counts_of_numbers_sorted (self, reverse=True):
+        return collections.OrderedDict(sorted(self.counts_of_numbers().items(), key=lambda kv: kv[1], reverse=reverse))
 
     def print_orig (self):
         printPuzzle(self.orig_data)
@@ -231,6 +271,13 @@ class SudokuPuzzle:
 
         myStr = myStr + "==================================================\n"
 
+        cnts = self.counts_of_numbers_sorted()
+        for num in cnts:
+            myStr = myStr + str(num)+" is found "+str(cnts[num])+" times\n"
+
+
+        myStr = myStr + "==================================================\n"
+
         if self.is_solved():
             myStr = myStr + "I'm SOLVED!\n"
         else:
@@ -247,7 +294,6 @@ myPzl = SudokuPuzzle(SudokuPZL1)
 print("==PZL 1==================================")
 print(myPzl)
 
-
 # To see whether or not each box contains each number un-comment (remove the # at the beginning of the line) these lines and run
 #for i in index_list:
 #    for j in index_list:
@@ -256,7 +302,6 @@ print(myPzl)
 myPzlSolved = SudokuPuzzle(SudokuPZL1Solution)
 print("==PZL 1 SOLUTION========================")
 print(myPzlSolved)
-
 
 myPzlBadSolution = SudokuPuzzle(SudokuBADSOLUTION)
 print("==PZL WITH BAD SOLUTION=================")

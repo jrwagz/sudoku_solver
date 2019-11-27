@@ -47,6 +47,16 @@ Currently if you run the program you should see this:
     Box 7 is NOT SOLVED!
     Box 8 is NOT SOLVED!
     ==================================================
+    3 is found 5 times
+    9 is found 5 times
+    4 is found 4 times
+    7 is found 4 times
+    8 is found 4 times
+    1 is found 3 times
+    5 is found 3 times
+    2 is found 2 times
+    6 is found 2 times
+    ==================================================
     I'm NOT SOLVED!
     ==================================================
     
@@ -63,6 +73,16 @@ Currently if you run the program you should see this:
     2 3 8 | 6 1 7 | 5 4 9
     7 4 5 | 2 8 9 | 6 1 3
     6 9 1 | 5 4 3 | 2 8 7
+    ==================================================
+    1 is found 9 times
+    2 is found 9 times
+    3 is found 9 times
+    4 is found 9 times
+    5 is found 9 times
+    6 is found 9 times
+    7 is found 9 times
+    8 is found 9 times
+    9 is found 9 times
     ==================================================
     I'm SOLVED!
     ==================================================
@@ -84,8 +104,19 @@ Currently if you run the program you should see this:
     Col 1 is NOT SOLVED!
     Box 0 is NOT SOLVED!
     ==================================================
+    6 is found 10 times
+    1 is found 9 times
+    2 is found 9 times
+    3 is found 9 times
+    4 is found 9 times
+    5 is found 9 times
+    7 is found 9 times
+    9 is found 9 times
+    8 is found 8 times
+    ==================================================
     I'm NOT SOLVED!
     ==================================================
+
     
 
 Well, we didn't really solve it, but instead our code was able to accurately tell us that the first puzzle wasn't solved, and that the second puzzle (the solution) was solved! So that's a good starting point.
