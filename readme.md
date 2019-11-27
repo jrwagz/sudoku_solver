@@ -7,6 +7,7 @@ Currently if you run the program you should see this:
     > python sudoku_solver.py
     Hello World, let's solve some Sudoku!
     ==PZL 1==================================
+    ==================================================
           | 7   4 | 8 9
     1     |     8 |   6
     9 8   | 1     | 3 7
@@ -18,8 +19,39 @@ Currently if you run the program you should see this:
       3 8 |     7 |   4 9
       4   | 2     |     3
       9 1 | 5   3 |
-    NOT SOLVED!!!
+    Row 0 is NOT SOLVED!
+    Row 1 is NOT SOLVED!
+    Row 2 is NOT SOLVED!
+    Row 3 is NOT SOLVED!
+    Row 4 is NOT SOLVED!
+    Row 5 is NOT SOLVED!
+    Row 6 is NOT SOLVED!
+    Row 7 is NOT SOLVED!
+    Row 8 is NOT SOLVED!
+    Col 0 is NOT SOLVED!
+    Col 1 is NOT SOLVED!
+    Col 2 is NOT SOLVED!
+    Col 3 is NOT SOLVED!
+    Col 4 is NOT SOLVED!
+    Col 5 is NOT SOLVED!
+    Col 6 is NOT SOLVED!
+    Col 7 is NOT SOLVED!
+    Col 8 is NOT SOLVED!
+    Box 0 is NOT SOLVED!
+    Box 1 is NOT SOLVED!
+    Box 2 is NOT SOLVED!
+    Box 3 is NOT SOLVED!
+    Box 4 is NOT SOLVED!
+    Box 5 is NOT SOLVED!
+    Box 6 is NOT SOLVED!
+    Box 7 is NOT SOLVED!
+    Box 8 is NOT SOLVED!
+    ==================================================
+    I'm NOT SOLVED!
+    ==================================================
+    
     ==PZL 1 SOLUTION========================
+    ==================================================
     5 6 3 | 7 2 4 | 8 9 1
     1 2 7 | 3 9 8 | 4 6 5
     9 8 4 | 1 5 6 | 3 7 2
@@ -31,8 +63,12 @@ Currently if you run the program you should see this:
     2 3 8 | 6 1 7 | 5 4 9
     7 4 5 | 2 8 9 | 6 1 3
     6 9 1 | 5 4 3 | 2 8 7
-    WE SOLVED IT!!!!
+    ==================================================
+    I'm SOLVED!
+    ==================================================
+    
     ==PZL WITH BAD SOLUTION=================
+    ==================================================
     5 6 3 | 7 2 4 | 8 9 1
     1 2 7 | 3 9 8 | 4 6 5
     9 6 4 | 1 5 6 | 3 7 2
@@ -44,11 +80,15 @@ Currently if you run the program you should see this:
     2 3 8 | 6 1 7 | 5 4 9
     7 4 5 | 2 8 9 | 6 1 3
     6 9 1 | 5 4 3 | 2 8 7
-    OOPS!!!! This puzzle isn't solved, but we think it is!!! Time to fix that
+    Row 2 is NOT SOLVED!
+    Col 1 is NOT SOLVED!
+    Box 0 is NOT SOLVED!
+    ==================================================
+    I'm NOT SOLVED!
+    ==================================================
     
 
 Well, we didn't really solve it, but instead our code was able to accurately tell us that the first puzzle wasn't solved, and that the second puzzle (the solution) was solved! So that's a good starting point.
-You'll also notice that there is a bad puzzle solution here, which our code currently thinks is solved, but it's not, so we need to fix that!
 
 
 ## Class Structure

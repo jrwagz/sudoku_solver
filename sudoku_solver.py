@@ -38,12 +38,13 @@ SudokuBADSOLUTION = [[5, 6, 3, 7, 2, 4, 8, 9, 1],
 index_list = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
 
-def printPuzzle (pzlData):
+def strForPuzzle (pzlData):
     rowCnt = 0
     colCnt = 0
+    myStr = ""
     for r in pzlData:
         if rowCnt % 3 == 0 and rowCnt != 0:
-            print("---------------------")
+            myStr = myStr + "---------------------\n"
         for c in r:
             colCnt = colCnt + 1
             if c == 0:
@@ -51,12 +52,51 @@ def printPuzzle (pzlData):
             else:
                 p = c
             if colCnt % 3 == 0 and colCnt != 0 and colCnt != 9:
-                print(p,end = " | ")
+                myStr = myStr + str(p) + " | "
             else:
-                print(p,end = " ")
-        print()
+                myStr = myStr + str(p) + " "
+        myStr = myStr + "\n"
         rowCnt = rowCnt + 1
         colCnt = 0
+
+    return myStr
+
+# This function is used to print out a Puzzle data structure so that it's easy to look at
+# it takes the data structure as input, then prints it to std_out in a pretty format, like this:
+#
+#       | 7   4 | 8 9
+# 1     |     8 |   6
+# 9 8   | 1     | 3 7
+# ---------------------
+#   7   | 4 6 5 |
+#       |       |
+#       | 9 3 2 |   5
+# ---------------------
+#   3 8 |     7 |   4 9
+#   4   | 2     |     3
+#   9 1 | 5   3 |
+def printPuzzle (pzlData):
+    print(strForPuzzle(pzlData))
+
+# This function takes a list as input, and then it determines if that list meets all the criteria for
+# being a solved Sudoku list.  For example, a row is a list, a column is a list, and the elements of a 
+# box also make a list.  Each of those classes simply put their data into a list format, then ask this
+# function to tell them if it's solved or not
+def isListSolved (pzlList):
+    # Ensure all numbers are between 1 and 9
+    for c in pzlList:
+        if (c < 1) or (c > 9) :
+            return False
+
+    # Ensure there are no duplicates, and that there are exactly 9 items
+    if not len(set(pzlList)) == 9:
+        return False
+
+    # If all numbers are between 1 and 9 (including 1 and 9), there are no duplicates,
+    # and the count of all the numbers equals nine, then by definition we have the numbers
+    # 1 through 9 exactly, and the list is solved
+    return True
+
 
 class SudokuSquare:
     def __init__ (self, id, column_index, row_index):
@@ -71,11 +111,16 @@ class SudokuRow:
         self.data = data
 
     def is_solved (self):
-        for c in self.data[self.id]:
-            if c == 0:
-                return False
+        # Our data is already a list, so send it to isListSolved directly
+        return isListSolved(self.data[self.id])
 
-        return True
+
+    def contains_number (self, number):
+        for r in self.data[self.id]:
+            if r == number:
+                return True
+
+        return False
 
 class SudokuColumn:
     def __init__ (self, id, data):
@@ -83,13 +128,19 @@ class SudokuColumn:
         self.data = data
 
     def is_solved (self):
-        solved = True
+        list = []
+        # Make a list that represents the column data, then send it to isListSolved
         for r in self.data:
-            if r[self.id] == 0:
-                solved = False
-                break
+            list.append(r[self.id])
 
-        return solved
+        return isListSolved(list)
+
+    def contains_number (self, number):
+        for r in self.data:
+            if r[self.id] == number:
+                return True
+
+        return False
 
 
 class SudokuBox:
@@ -103,12 +154,13 @@ class SudokuBox:
         return "BOX: "+str(self.id)+" row_offset: "+str(self.row_offset)+" col_offset: "+str(self.col_offset)
 
     def is_solved (self):
+        list = []
+        # Make a list that represents the box data, then send it to isListSolved
         for r in self.data[self.row_offset:self.row_offset+3]:
             for c in r[self.col_offset:self.col_offset+3]:
-                if c == 0:
-                    return False
+                list.append(c)
 
-        return True
+        return isListSolved(list)
         
     def contains_number (self, number):
         for r in self.data[self.row_offset:self.row_offset+3]:
@@ -165,43 +217,48 @@ class SudokuPuzzle:
         printPuzzle(self.data)
 
     def __str__ (self):
-        return "Boxes   : "+str(len(self.boxes)) + "\n" + \
-               "Rows    : "+str(len(self.rows)) + "\n" + \
-               "Columns : "+str(len(self.columns)) + "\n" + \
-               "Squares : "+str(len(self.squares))
+        myStr = "==================================================\n"
+        myStr = myStr + strForPuzzle(self.data)
+        for r in self.rows:
+            if not r.is_solved():
+                myStr = myStr + "Row "+str(r.id)+" is NOT SOLVED!\n"
+        for c in self.columns:
+            if not c.is_solved():
+                myStr = myStr + "Col "+str(c.id)+" is NOT SOLVED!\n"
+        for b in self.boxes:
+            if not b.is_solved():
+                myStr = myStr + "Box "+str(b.id)+" is NOT SOLVED!\n"
+
+        myStr = myStr + "==================================================\n"
+
+        if self.is_solved():
+            myStr = myStr + "I'm SOLVED!\n"
+        else:
+            myStr = myStr + "I'm NOT SOLVED!\n"
+
+        myStr = myStr + "==================================================\n"
+
+        return myStr
 
 
 print("Hello World, let's solve some Sudoku!")
 myPzl = SudokuPuzzle(SudokuPZL1)
 
 print("==PZL 1==================================")
-myPzl.print_data()
+print(myPzl)
+
 
 # To see whether or not each box contains each number un-comment (remove the # at the beginning of the line) these lines and run
 #for i in index_list:
 #    for j in index_list:
 #        print("Box "+str(j)+" Contains "+str(i+1)+"? "+str(myPzl.boxes[j].contains_number(i+1)))
 
-
-if myPzl.is_solved():
-    print("WE SOLVED IT!!!!")
-else:
-    print("NOT SOLVED!!!")
-
-
 myPzlSolved = SudokuPuzzle(SudokuPZL1Solution)
 print("==PZL 1 SOLUTION========================")
-myPzlSolved.print_data()
-if myPzlSolved.is_solved():
-    print("WE SOLVED IT!!!!")
-else:
-    print("NOT SOLVED!!!")
+print(myPzlSolved)
+
 
 myPzlBadSolution = SudokuPuzzle(SudokuBADSOLUTION)
 print("==PZL WITH BAD SOLUTION=================")
-myPzlBadSolution.print_data()
-if myPzlBadSolution.is_solved():
-    print("OOPS!!!! This puzzle isn't solved, but we think it is!!! Time to fix that")
-else:
-    print("NOT SOLVED!!!")
+print(myPzlBadSolution)
 
