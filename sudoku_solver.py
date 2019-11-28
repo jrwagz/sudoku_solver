@@ -111,11 +111,38 @@ def isListSolved (pzlList):
 
 
 class SudokuSquare:
-    def __init__ (self, id, column_index, row_index, puzzle):
+    def __init__ (self, id, column_index, row_index, puzzle, row, column, box):
         self.id = id
         self.column_index = column_index
         self.row_index = row_index
         self.puzzle = puzzle
+        self.row = row
+        self.column = column
+        self.box = box
+
+    def __str__ (self):
+        myStr = "SQUARE: "+str(self.id)+" row_index: "+str(self.row_index)+" column_index: "+str(self.column_index)+" value: "+str(self.value())
+        return myStr
+
+    def is_solved (self):
+        return not self.puzzle.data[self.row_index][self.column_index] == 0
+
+    def value (self):
+        return self.puzzle.data[self.row_index][self.column_index]
+
+    def set_value (self,value):
+        self.puzzle.data[self.row_index][self.column_index] = value
+
+    def possible_numbers_from_list (self,list):
+        poss_nums = []
+        for num in list:
+            if not self.column.contains_number(num):
+                if not self.box.contains_number(num):
+                    if not self.row.contains_number(num):
+                        poss_nums.append(num)
+
+        return poss_nums
+
 
 
 class SudokuRow:
@@ -137,6 +164,23 @@ class SudokuRow:
                 return True
 
         return False
+
+    def unsolved_numbers (self):
+        nums_to_solve = []
+        for num in index_list:
+            myNum = num+1
+            if not self.contains_number(myNum):
+                nums_to_solve.append(myNum)
+
+        return nums_to_solve
+
+    def blank_squares (self):
+        squares = []
+        for c in index_list:
+            if self.data[self.id][c] == 0:
+                squares.append(self.puzzle.squares[9*self.id+c])
+
+        return squares
 
 class SudokuColumn:
     def __init__ (self, id, data, puzzle):
@@ -167,6 +211,22 @@ class SudokuColumn:
 
         return False
 
+    def unsolved_numbers (self):
+        nums_to_solve = []
+        for num in index_list:
+            myNum = num+1
+            if not self.contains_number(myNum):
+                nums_to_solve.append(myNum)
+
+        return nums_to_solve
+
+    def blank_squares (self):
+        squares = []
+        for r in index_list:
+            if self.data[r][self.id] == 0:
+                squares.append(self.puzzle.squares[9*r+self.id])
+
+        return squares
 
 class SudokuBox:
     def __init__ (self, id, data, puzzle):
@@ -255,6 +315,33 @@ class SudokuBox:
         
         return blank_indices
 
+    def unsolved_numbers (self):
+        nums_to_solve = []
+        for num in index_list:
+            myNum = num+1
+            if not self.contains_number(myNum):
+                nums_to_solve.append(myNum)
+
+        return nums_to_solve
+
+    def blank_squares (self):
+        squares = []
+        row_indices = []
+        row_indices.append(self.row_offset+0)
+        row_indices.append(self.row_offset+1)
+        row_indices.append(self.row_offset+2)
+        col_indices = []
+        col_indices.append(self.col_offset+0)
+        col_indices.append(self.col_offset+1)
+        col_indices.append(self.col_offset+2)
+
+        for r in row_indices:
+            for c in col_indices:
+                if self.data[r][c] == 0:
+                    squares.append(self.puzzle.squares[9*r+c])
+
+        return squares
+
 
 class SudokuPuzzle:
     def __init__ (self, puzzleData):
@@ -276,8 +363,15 @@ class SudokuPuzzle:
             self.rows.append(SudokuRow(i, self.data, self))
             self.columns.append(SudokuColumn(i, self.data, self))
             self.boxes.append(SudokuBox(i, self.data, self))
-            for j in index_list:
-                self.squares.append(SudokuSquare(i*j,i,j,self))
+
+        for r in index_list:
+            for c in index_list:
+                #self.col_offset = (id % 3)*3
+                #self.row_offset = math.floor(id/3) * 3
+                box_col_num = math.floor(c/3)
+                box_row_num = math.floor(r/3)
+                square_num = 9*r+c
+                self.squares.append(SudokuSquare(square_num,c,r,self,self.rows[r],self.columns[c],self.boxes[3*box_row_num+box_col_num]))
 
     def is_solved (self):
         for r in self.rows:
@@ -349,12 +443,59 @@ class SudokuPuzzle:
 
         return solved_squares
 
+    # This strategy looks at every row, and figures out which numbers aren't solved in that row
+    #   then it asks each empty square to tell it which of those numbers are possible in that square
+    #       If the list of possibilities for that square is just one number, then that's a solution 
+    def solving_tactic_2 (self,debug=False):
+        print("...performing solving tactic 2")
+        solved_squares = 0
+        for r in self.rows:
+            if not r.is_solved():
+                if debug: print("Row "+str(r.id)+" isn't solved")
+                unsolved_nums = r.unsolved_numbers()
+                blank_squares = r.blank_squares()
+                if debug: print("  Row "+str(r.id)+" needs these numbers solved: "+str(unsolved_nums))
+                if debug: print("  Row "+str(r.id)+" has "+str(len(blank_squares))+" blank squares.")
+                for s in blank_squares:
+                    poss_solutions = s.possible_numbers_from_list(unsolved_nums)
+                    if debug: print("    Square "+str(s.id)+" has these possible solutions: "+str(poss_solutions))
+                    if len(poss_solutions) == 1:
+                        s.set_value(poss_solutions[0])
+                        print("      WE FOUND A SOLUTION! "+str(s))
+                        solved_squares = solved_squares + 1
+                        if debug: return solved_squares
+
+        return solved_squares
+
     def attempt_to_solve (self):
         print("Attempting to solve the puzzle!")
-        #self.solving_tactic_1(True)
-        solved_squares = 1
-        while solved_squares > 0:
-            solved_squares = self.solving_tactic_1()
+
+        total_solved = 0
+        total_solved_this_round = 1
+        round_num = 0
+        while total_solved_this_round > 0:
+            round_num = round_num + 1
+            print("  Round "+str(round_num))
+            tactic_1_solved = 1
+            total_tactic_1_solved = 0
+            while tactic_1_solved > 0:
+                tactic_1_solved = self.solving_tactic_1()
+                total_tactic_1_solved = total_tactic_1_solved + tactic_1_solved
+
+            total_solved_this_round = total_tactic_1_solved
+            print("    Tactic 1 Solved "+str(total_tactic_1_solved)+" squares")
+            
+            tactic_2_solved = 1
+            total_tactic_2_solved = 0
+            while tactic_2_solved > 0:
+                tactic_2_solved = self.solving_tactic_2()
+                total_tactic_2_solved = total_tactic_2_solved + tactic_2_solved
+
+            total_solved_this_round = total_solved_this_round + total_tactic_2_solved
+            print("    Tactic 2 Solved "+str(total_tactic_2_solved)+" squares")
+
+        return self.is_solved()
+
 
     def print_orig (self):
         printPuzzle(self.orig_data)
@@ -401,21 +542,22 @@ print("==PZL 1==================================")
 print(myPzl)
 
 myPzl.attempt_to_solve()
+myPzl.solving_tactic_2(True)
 
 print("==PZL 1 attempted solution===============")
 
 print(myPzl)
 
 
-myPzl9 = SudokuPuzzle(SudokuPZL9)
-print("==PZL 9==================================")
-print(myPzl9)
-
-myPzl9.attempt_to_solve()
-
-print("==PZL 9 attempted solution===============")
-
-print(myPzl9)
+#myPzl9 = SudokuPuzzle(SudokuPZL9)
+#print("==PZL 9==================================")
+#print(myPzl9)
+#
+#myPzl9.attempt_to_solve()
+#
+#print("==PZL 9 attempted solution===============")
+#
+#print(myPzl9)
 
 
 
