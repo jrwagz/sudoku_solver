@@ -3,6 +3,7 @@ import copy
 import math
 import operator
 import collections
+import datetime
 
 
 SudokuPZL1 = [[0, 0, 0, 7, 0, 4, 8, 9, 0],
@@ -24,6 +25,26 @@ SudokuPZL9 = [[0, 7, 0, 0, 0, 0, 4, 0, 0],
               [0, 2, 0, 0, 0, 7, 0, 3, 0],
               [0, 0, 0, 5, 0, 0, 1, 7, 9],
               [0, 0, 1, 0, 0, 0, 0, 2, 0]]
+
+SudokuPZL38 = [[5, 0, 2, 0, 0, 0, 4, 0, 7],
+               [6, 0, 0, 4, 0, 0, 5, 0, 2],
+               [0, 0, 0, 5, 2, 3, 6, 0, 0],
+               [0, 0, 0, 7, 0, 0, 0, 0, 0],
+               [0, 0, 6, 8, 4, 2, 1, 0, 0],
+               [0, 0, 0, 0, 0, 6, 0, 0, 0],
+               [0, 0, 9, 3, 7, 5, 0, 0, 0],
+               [8, 0, 4, 0, 0, 9, 0, 0, 6],
+               [2, 0, 5, 0, 0, 0, 3, 0, 9]]
+
+SudokuPZL74 = [[0, 0, 0, 3, 0, 0, 0, 0, 2],
+               [0, 0, 7, 0, 0, 0, 5, 0, 0],
+               [5, 4, 3, 8, 0, 0, 0, 0, 1],
+               [0, 9, 0, 4, 8, 0, 0, 0, 0],
+               [0, 0, 4, 0, 7, 0, 2, 0, 0],
+               [0, 0, 0, 0, 9, 1, 0, 7, 0],
+               [3, 0, 0, 0, 0, 8, 9, 4, 5],
+               [0, 0, 5, 0, 0, 0, 8, 0, 0],
+               [2, 0, 0, 0, 0, 4, 0, 0, 0]]
 
 
 SudokuPZL1Solution = [[5, 6, 3, 7, 2, 4, 8, 9, 1],
@@ -48,6 +69,12 @@ SudokuBADSOLUTION = [[5, 6, 3, 7, 2, 4, 8, 9, 1],
                      [6, 9, 1, 5, 4, 3, 2, 8, 7]]
 
 index_list = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+
+my_puzzles = []
+my_puzzles.append(SudokuPZL1)
+my_puzzles.append(SudokuPZL9)
+my_puzzles.append(SudokuPZL38)
+my_puzzles.append(SudokuPZL74)
 
 
 def strForPuzzle (pzlData):
@@ -121,7 +148,7 @@ class SudokuSquare:
         self.box = box
 
     def __str__ (self):
-        myStr = "SQUARE: "+str(self.id)+" row_index: "+str(self.row_index)+" column_index: "+str(self.column_index)+" value: "+str(self.value())
+        myStr = "SQUARE: "+str(self.id)+" ("+str(self.row_index)+","+str(self.column_index)+") row_index: "+str(self.row_index)+" column_index: "+str(self.column_index)+" value: "+str(self.value())
         return myStr
 
     def is_solved (self):
@@ -135,11 +162,14 @@ class SudokuSquare:
 
     def possible_numbers_from_list (self,list):
         poss_nums = []
-        for num in list:
-            if not self.column.contains_number(num):
-                if not self.box.contains_number(num):
-                    if not self.row.contains_number(num):
-                        poss_nums.append(num)
+        if self.is_solved():
+            return poss_nums
+        else:
+            for num in list:
+                if not self.column.contains_number(num):
+                    if not self.box.contains_number(num):
+                        if not self.row.contains_number(num):
+                            poss_nums.append(num)
 
         return poss_nums
 
@@ -342,6 +372,84 @@ class SudokuBox:
 
         return squares
 
+    def possible_squares_for_number (self, number, debug=False):
+        if debug: print("BOX: "+str(self.id)+" finding possible squares for: "+str(number))
+        squares = []
+        row_indices = []
+        row_indices.append(self.row_offset+0)
+        row_indices.append(self.row_offset+1)
+        row_indices.append(self.row_offset+2)
+        col_indices = []
+        col_indices.append(self.col_offset+0)
+        col_indices.append(self.col_offset+1)
+        col_indices.append(self.col_offset+2)
+
+        nums = []
+        nums.append(number)
+
+        for r in row_indices:
+            for c in col_indices:
+                mySquare = self.puzzle.squares[9*r+c]
+                if not mySquare.is_solved():
+                    if len(mySquare.possible_numbers_from_list(nums)) > 0: 
+                        if debug: print("  Possible square! "+str(self.puzzle.squares[9*r+c]))
+                        squares.append(self.puzzle.squares[9*r+c])
+
+
+        if debug: print("  BOX: "+str(self.id)+" has "+str(len(squares))+" possible squares for: "+str(number))
+        return squares
+
+
+    def attempt_tactic_3_for_with_number_in_square_for_boxes (self,number,square,boxes,debug=False,verbose=True):
+        # Pretend that we solve this square, then see if it causes another solution to pop up
+        solved_squares = []
+        square.set_value(number)
+        for b in boxes:
+            if not b.is_solved():
+                if not b.contains_number(number):
+                    poss_squares = b.possible_squares_for_number(number)
+                    if len(poss_squares) == 1:
+                        solved_squares.append(poss_squares[0])
+
+        # Restore the unsolved square
+        square.set_value(0)
+        for s in solved_squares:
+            s.set_value(number)
+            if verbose: print("          WE FOUND A SOLUTION! "+str(s))
+
+        return len(solved_squares)
+
+    def attempt_tactic_3_for_rows_with_number_in_square (self,number,square,debug=False,verbose=True):
+        if debug: print("        attempt_tactic_3_for_rows_with_number: "+str(number)+" in "+str(square))
+        # First figure out which other boxes we'll be asking
+        other_boxes = []
+        if (self.id % 3) == 0:
+            other_boxes.append(self.puzzle.boxes[self.id+1])
+            other_boxes.append(self.puzzle.boxes[self.id+2])
+        elif (self.id % 3) == 1:
+            other_boxes.append(self.puzzle.boxes[self.id-1])
+            other_boxes.append(self.puzzle.boxes[self.id+1])
+        else:
+            other_boxes.append(self.puzzle.boxes[self.id-1])
+            other_boxes.append(self.puzzle.boxes[self.id-2])
+
+        return self.attempt_tactic_3_for_with_number_in_square_for_boxes(number,square,other_boxes,verbose=verbose)
+
+    def attempt_tactic_3_for_columns_with_number_in_square (self,number,square,debug=False,verbose=True):
+        if debug: print("        attempt_tactic_3_for_columns_with_number: "+str(number)+" in "+str(square))
+        # First figure out which other boxes we'll be asking
+        other_boxes = []
+        if math.floor(self.id/3) == 0:
+            other_boxes.append(self.puzzle.boxes[self.id+3])
+            other_boxes.append(self.puzzle.boxes[self.id+6])
+        elif math.floor(self.id/3) == 1:
+            other_boxes.append(self.puzzle.boxes[self.id-3])
+            other_boxes.append(self.puzzle.boxes[self.id+3])
+        else:
+            other_boxes.append(self.puzzle.boxes[self.id-6])
+            other_boxes.append(self.puzzle.boxes[self.id-3])
+
+        return self.attempt_tactic_3_for_with_number_in_square_for_boxes(number,square,other_boxes,verbose=verbose)
 
 class SudokuPuzzle:
     def __init__ (self, puzzleData):
@@ -415,8 +523,8 @@ class SudokuPuzzle:
     #                   remember all of the row/col indices that are possible solutions in this box
     #       If the list of possible solutions is 1, then fill in that location
     #               
-    def solving_tactic_1 (self,debug=False):
-        print("...performing solving tactic 1")
+    def solving_tactic_1 (self,debug=False,verbose=True):
+        if verbose: print("...performing solving tactic 1")
         cnts = self.counts_of_numbers_sorted();
         solved_squares = 0
         for num in cnts:
@@ -434,7 +542,7 @@ class SudokuPuzzle:
                                     poss_solution_spots.append((r.id,b.col_offset+c_idx))
 
                     if len(poss_solution_spots) == 1:
-                        print("    WE FOUND A SOLUTION! Box: "+str(b.id)+" Row: "+str(poss_solution_spots[0][0])+" Col: "+str(poss_solution_spots[0][1])+" = "+str(num))
+                        if verbose: print("    WE FOUND A SOLUTION! Box: "+str(b.id)+" Row: "+str(poss_solution_spots[0][0])+" Col: "+str(poss_solution_spots[0][1])+" = "+str(num))
                         self.data[poss_solution_spots[0][0]][poss_solution_spots[0][1]] = num
                         solved_squares = solved_squares + 1
                         if debug: return solved_squares
@@ -446,8 +554,8 @@ class SudokuPuzzle:
     # This strategy looks at every row, and figures out which numbers aren't solved in that row
     #   then it asks each empty square to tell it which of those numbers are possible in that square
     #       If the list of possibilities for that square is just one number, then that's a solution 
-    def solving_tactic_2 (self,debug=False):
-        print("...performing solving tactic 2")
+    def solving_tactic_2 (self,debug=False,verbose=True):
+        if verbose: print("...performing solving tactic 2")
         solved_squares = 0
         for r in self.rows:
             if not r.is_solved():
@@ -461,38 +569,71 @@ class SudokuPuzzle:
                     if debug: print("    Square "+str(s.id)+" has these possible solutions: "+str(poss_solutions))
                     if len(poss_solutions) == 1:
                         s.set_value(poss_solutions[0])
-                        print("      WE FOUND A SOLUTION! "+str(s))
+                        if verbose: print("      WE FOUND A SOLUTION! "+str(s))
                         solved_squares = solved_squares + 1
                         if debug: return solved_squares
 
         return solved_squares
 
-    def attempt_to_solve (self):
-        print("Attempting to solve the puzzle!")
+    # This strategy looks at every box, determines what all the possible squares are for each number, and if 
+    # any of those sets of numbers are only in a single dimension, then it assumes that dimension blocks out
+    # possibilities for other boxes in that dimension, and if it does and there is only a single remaining possiblity
+    # after making that assumption, then that remaining possibility is the solution
+    def solving_tactic_3 (self,debug=False,verbose=True):
+        if verbose: print("...performing solving tactic 3")
+        solved_squares = 0
+        for b in self.boxes:
+            if not b.is_solved():
+                if debug: print("  BOX: "+str(b.id)+" is not solved")
+                unsolved_nums = b.unsolved_numbers()
+                for num in unsolved_nums:
+                    if debug: print("    NUM: "+str(num)+" is not solved in box "+str(b.id))
+                    possible_squares = b.possible_squares_for_number(num)
+                    if len(possible_squares) > 1:
+                        if debug: print("      NUM: "+str(num)+" has at least 2 possible squares in box "+str(b.id))
+                        if all(s.row_index == possible_squares[0].row_index for s in possible_squares[1:]): 
+                            solved_squares = solved_squares + b.attempt_tactic_3_for_rows_with_number_in_square(num,possible_squares[0],verbose=verbose)
+                        if all(s.column_index == possible_squares[0].column_index for s in possible_squares[1:]): 
+                            solved_squares = solved_squares + b.attempt_tactic_3_for_columns_with_number_in_square(num,possible_squares[0],verbose=verbose)
+
+        return solved_squares
+
+
+    def attempt_to_solve (self,verbose=True):
+        if verbose: print("Attempting to solve the puzzle!")
 
         total_solved = 0
         total_solved_this_round = 1
         round_num = 0
         while total_solved_this_round > 0:
             round_num = round_num + 1
-            print("  Round "+str(round_num))
+            if verbose: print("  Round "+str(round_num))
             tactic_1_solved = 1
             total_tactic_1_solved = 0
             while tactic_1_solved > 0:
-                tactic_1_solved = self.solving_tactic_1()
+                tactic_1_solved = self.solving_tactic_1(verbose=verbose)
                 total_tactic_1_solved = total_tactic_1_solved + tactic_1_solved
 
             total_solved_this_round = total_tactic_1_solved
-            print("    Tactic 1 Solved "+str(total_tactic_1_solved)+" squares")
+            if verbose: print("    Tactic 1 Solved "+str(total_tactic_1_solved)+" squares")
             
             tactic_2_solved = 1
             total_tactic_2_solved = 0
             while tactic_2_solved > 0:
-                tactic_2_solved = self.solving_tactic_2()
+                tactic_2_solved = self.solving_tactic_2(verbose=verbose)
                 total_tactic_2_solved = total_tactic_2_solved + tactic_2_solved
 
             total_solved_this_round = total_solved_this_round + total_tactic_2_solved
-            print("    Tactic 2 Solved "+str(total_tactic_2_solved)+" squares")
+            if verbose: print("    Tactic 2 Solved "+str(total_tactic_2_solved)+" squares")
+            
+            tactic_3_solved = 1
+            total_tactic_3_solved = 0
+            while tactic_3_solved > 0:
+                tactic_3_solved = self.solving_tactic_3(verbose=verbose)
+                total_tactic_3_solved = total_tactic_3_solved + tactic_3_solved
+
+            total_solved_this_round = total_solved_this_round + total_tactic_3_solved
+            if verbose: print("    Tactic 3 Solved "+str(total_tactic_3_solved)+" squares")
 
         return self.is_solved()
 
@@ -536,41 +677,19 @@ class SudokuPuzzle:
 
 
 print("Hello World, let's solve some Sudoku!")
-myPzl = SudokuPuzzle(SudokuPZL1)
 
-print("==PZL 1==================================")
-print(myPzl)
-
-myPzl.attempt_to_solve()
-myPzl.solving_tactic_2(True)
-
-print("==PZL 1 attempted solution===============")
-
-print(myPzl)
-
-
-#myPzl9 = SudokuPuzzle(SudokuPZL9)
-#print("==PZL 9==================================")
-#print(myPzl9)
-#
-#myPzl9.attempt_to_solve()
-#
-#print("==PZL 9 attempted solution===============")
-#
-#print(myPzl9)
-
-
-
-# To see whether or not each box contains each number un-comment (remove the # at the beginning of the line) these lines and run
-#for i in index_list:
-#    for j in index_list:
-#        print("Box "+str(j)+" Contains "+str(i+1)+"? "+str(myPzl.boxes[j].contains_number(i+1)))
-#
-#myPzlSolved = SudokuPuzzle(SudokuPZL1Solution)
-#print("==PZL 1 SOLUTION========================")
-#print(myPzlSolved)
-#
-#myPzlBadSolution = SudokuPuzzle(SudokuBADSOLUTION)
-#print("==PZL WITH BAD SOLUTION=================")
-#print(myPzlBadSolution)
+puzz_num = 0
+for puzz_data in my_puzzles:
+    puzz_num = puzz_num + 1
+    myPzl = SudokuPuzzle(puzz_data)
+    start = datetime.datetime.now()
+    solved = myPzl.attempt_to_solve(False)
+    end = datetime.datetime.now()
+    elapsed = end - start
+    if solved:
+        print("Puzzle: "+str(puzz_num)+" SOLVED in "+str(elapsed)+" seconds")
+        print(myPzl)
+    else:
+        print("Puzzle: "+str(puzz_num)+" NOT SOLVED in "+str(elapsed)+" seconds")
+        print(myPzl)
 
